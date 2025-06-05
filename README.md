@@ -6,6 +6,8 @@
 
 **Necromunda Rolls** is a web-based dice rolling tool designed for players of the tabletop miniature game *Necromunda*. It simplifies the process of rolling various types of dice used in the game and provides a user-friendly interface to select the number of dice to roll, visualize the results with animated dices and apply special rules like 2d6 Lasting Injuries.
 
+[USE IT NOW!](https://erdemdur.github.io/necromunda-rolls/)
+
 ## Features
 - **Multiple Dice Types**: Roll Scatter, Ammo/Rapid Fire, Injury, Damage, Vehicle Location, Control and standard D6 dice.
 - **Visual Feedback**: Displays rolled dice with random rotations on a canvas.
