@@ -1,13 +1,16 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Necromunda Rolls</title>
+    <!-- Open Graph Meta Tags for Social Sharing -->
     <meta property="og:title" content="Necromunda Rolls">
-	<meta property="og:description" content="A super dirty tool for rolling dice in Necromunda games with customizable dice types and settings.">
-	<meta property="og:image" content="https://i.imgur.com/ustpoBI.gif">
-	<meta property="og:url" content="https://erdemdur.github.io/necromunda-rolls/index.html">
-	<meta property="og:type" content="website">
-	<meta name="twitter:card" content="summary_large_image">
+    <meta property="og:description" content="A super dirty tool for rolling dice in Necromunda games with customizable dice types and settings.">
+    <meta property="og:image" content="https://erdemdur.github.io/necromunda-rolls/assets/image/necromun300x200.gif">
+    <meta property="og:url" content="https://erdemdur.github.io/necromunda-rolls/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
     <style>
         * {
             margin: 0;
@@ -313,7 +316,7 @@
         </div>
         <div class="settings-footer">
             <img src="assets/image/necromun300x200.gif" alt="Necromunda Rolls Logo">
-            <p>Version 1.0.0 | Last Updated: June 05, 2025, 06:39 PM +03</p>
+            <p>Version 1.0.0 | Last Updated: June 05, 2025, 07:42 PM +03</p>
             <p><a href="https://github.com/erdemdur/necromunda-rolls" target="_blank">View Project on GitHub</a></p>
         </div>
     </div>
@@ -458,14 +461,17 @@
             const spacing = 13;
             let dicePerRow = 6;
 
+            // Store the current dice state for redrawing on resize
+            let currentDice = [];
+            let currentResults = '';
+
             // Load the dice image
             const diceImage = new Image();
-			
-			//this was temporary
+			//temp
             //diceImage.src = 'https://i.imgur.com/kXCnjTJ.png';
             //diceImage.crossOrigin = 'Anonymous';
 
-			diceImage.src = 'assets/image/lazy.png';
+            diceImage.src = 'assets/image/lazy.png';
 
             // Audio setup for local roll.mp3
             let audio = new Audio('assets/audio/roll.mp3');
@@ -482,12 +488,11 @@
             // Dice rolling logic
             const rollDie = () => Math.floor(Math.random() * 6) + 1;
 
-            const drawDie = (x, y, type, value, isFirst = false, apply2d6Rule = false) => {
+            const drawDie = (x, y, type, value, isFirst = false, apply2d6Rule = false, rotation = 0) => {
                 ctx.save();
                 ctx.translate(x, y);
 
-                // Apply random rotation
-                const rotation = Math.random() * Math.PI * 2;
+                // Apply stored rotation
                 ctx.rotate(rotation);
 
                 // Draw the die
@@ -536,6 +541,29 @@
                 canvas.height = canvasHeight;
             };
 
+            const redrawDice = () => {
+                if (currentDice.length === 0) {
+                    updateCanvasSize(0);
+                    return;
+                }
+
+                updateCanvasSize(currentDice.length);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                let currentIndex = 0;
+                for (const die of currentDice) {
+                    const row = Math.floor(currentIndex / dicePerRow);
+                    const col = currentIndex % dicePerRow;
+                    const x = col * (dieSize + spacing) + dieSize / 2 + spacing;
+                    const y = row * (dieSize + spacing) + dieSize / 2 + spacing;
+
+                    drawDie(x, y, die.type, die.value, die.isFirst, die.apply2d6Rule, die.rotation);
+                    currentIndex++;
+                }
+
+                document.getElementById('results').innerHTML = currentResults;
+            };
+
             const rollDice = () => {
                 const diceCounts = {
                     scatter: parseInt(document.getElementById('scatter-count').value) || 0,
@@ -550,15 +578,16 @@
                 const totalDice = Object.values(diceCounts).reduce((a, b) => a + b, 0);
                 if (totalDice === 0) {
                     document.getElementById('results').innerHTML = 'Please select at least one die to roll.';
+                    currentDice = [];
+                    currentResults = 'Please select at least one die to roll.';
                     updateCanvasSize(0);
                     return;
                 }
 
                 playRollSound();
 
-                updateCanvasSize(totalDice);
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+                // Clear previous state
+                currentDice = [];
                 let results = '';
                 let currentIndex = 0;
                 let d6Results = [];
@@ -576,7 +605,8 @@
                     if (type === 'd6') {
                         for (let i = 0; i < count; i++) {
                             const value = rollDie();
-                            d6DiceRolled.push({ type: 'd6', value, isFirst: i === 0 });
+                            const rotation = Math.random() * Math.PI * 2; // Set initial rotation
+                            d6DiceRolled.push({ type: 'd6', value, isFirst: i === 0, apply2d6Rule: is2d6Roll, rotation });
                             d6Results.push(value);
                         }
                     } else {
@@ -585,14 +615,10 @@
 
                         for (let i = 0; i < count; i++) {
                             const value = rollDie();
+                            const rotation = Math.random() * Math.PI * 2; // Set initial rotation
                             values.push(value);
 
-                            const row = Math.floor(currentIndex / dicePerRow);
-                            const col = currentIndex % dicePerRow;
-                            const x = col * (dieSize + spacing) + dieSize / 2 + spacing;
-                            const y = row * (dieSize + spacing) + dieSize / 2 + spacing;
-
-                            drawDie(x, y, type, value, false, false);
+                            currentDice.push({ type, value, isFirst: false, apply2d6Rule: false, rotation });
                             typeResults += `${dieOutcomes[type][value - 1].label}${i < count - 1 ? ', ' : ''}`;
                             currentIndex++;
                         }
@@ -603,15 +629,9 @@
                     }
                 }
 
-                // Second pass: Draw D6 dice with correct graying logic
+                // Second pass: Add D6 dice to the state
                 for (const die of d6DiceRolled) {
-                    const row = Math.floor(currentIndex / dicePerRow);
-                    const col = currentIndex % dicePerRow;
-                    const x = col * (dieSize + spacing) + dieSize / 2 + spacing;
-                    const y = row * (dieSize + spacing) + dieSize / 2 + spacing;
-
-                    drawDie(x, y, die.type, die.value, die.isFirst && is2d6Roll, is2d6Roll);
-                    currentIndex++;
+                    currentDice.push(die);
                 }
 
                 // Handle D6 results
@@ -627,7 +647,8 @@
                     results += d6Text + '<br>';
                 }
 
-                document.getElementById('results').innerHTML = results;
+                currentResults = results;
+                redrawDice();
             };
 
             // Clear all inputs
@@ -635,6 +656,8 @@
                 const inputs = document.querySelectorAll('input[type="number"]');
                 inputs.forEach(input => input.value = 0);
                 document.getElementById('results').innerHTML = '';
+                currentDice = [];
+                currentResults = '';
                 updateCanvasSize(0);
             });
 
@@ -693,12 +716,9 @@
             // Initial canvas setup
             updateCanvasSize(0);
 
-            // Resize listener
+            // Resize listener - Only redraw, don't re-roll or re-rotate
             window.addEventListener('resize', () => {
-                const totalDice = Array.from(document.querySelectorAll('input[type="number"]'))
-                    .reduce((sum, input) => sum + (parseInt(input.value) || 0), 0);
-                updateCanvasSize(totalDice);
-                rollDice(); // Redraw dice on resize
+                redrawDice();
             });
         });
     </script>
