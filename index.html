@@ -321,7 +321,7 @@
         </div>
         <div class="settings-footer">
             <img src="assets/image/necromun300x200.gif" alt="Necromunda Rolls Logo">
-            <p>Version 1.0.2 | Last Updated: June 05, 2025, 10:09 PM +03</p>
+            <p>Version 1.0.3 | Last Updated: June 05, 2025, 10:39 PM +03</p>
             <p><a href="https://github.com/erdemdur/necromunda-rolls" target="_blank">View Project on GitHub</a></p>
         </div>
     </div>
@@ -492,6 +492,7 @@
 
             function playRollSound() {
                 if (isSoundEnabled) {
+		    audio.playbackRate = +(Math.random() + 1).toFixed(1);	
                     audio.currentTime = 0; // Rewind to start
                     audio.play().catch(error => console.error('Audio play failed:', error));
                 }
