@@ -1,0 +1,706 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="Necromunda Rolls">
+	<meta property="og:description" content="A super dirty tool for rolling dice in Necromunda games with customizable dice types and settings.">
+	<meta property="og:image" content="https://i.imgur.com/ustpoBI.gif">
+	<meta property="og:url" content="https://erdemdur.github.io/necromunda-rolls/index.html">
+	<meta property="og:type" content="website">
+	<meta name="twitter:card" content="summary_large_image">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #222;
+            color: #fff;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            padding: 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            margin-bottom: 1rem;
+        }
+        #diceCanvas {
+            background: #333;
+            margin: 1rem 0;
+            max-width: 100%;
+            border-radius: 5px;
+        }
+        .dice-selection-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 0.5rem;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 1rem;
+        }
+        .dice-selection {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.5rem;
+        }
+        .dice-control {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        label {
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            flex: 1;
+            text-align: left;
+            min-width: 140px;
+        }
+        input {
+            padding: 0.3rem;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            width: 4rem;
+            text-align: center;
+            background: #333;
+            color: #fff;
+            border: 1px solid #666;
+        }
+        button {
+            padding: 0.3rem 0.6rem;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            background: #444;
+            color: #fff;
+            border: 1px solid #666;
+            border-radius: 5px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 1rem;
+        }
+        #results {
+            width: 100%;
+            max-width: 800px; /* Match dice-selection-container width */
+            margin-top: 1rem;
+            text-align: left;
+            max-height: 20vh;
+            overflow-y: auto;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            padding: 0.5rem;
+            background: #333;
+            border-radius: 5px;
+            color: #fff;
+        }
+        #settings-icon {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        #settings-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem;
+            color: #fff;
+        }
+        #settings-overlay.active {
+            display: block;
+        }
+        .setting-group {
+            margin-bottom: 1.5rem;
+            max-width: 600px; /* Limit settings width on desktop */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .setting-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        #close-settings {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+        }
+        .settings-footer {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .settings-footer img {
+            width: 100px;
+            height: auto;
+        }
+        .settings-footer p {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        .settings-footer a {
+            color: #1e90ff;
+            text-decoration: none;
+        }
+        .settings-footer a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 600px) {
+            .dice-selection-container {
+                grid-template-columns: 1fr;
+            }
+            .dice-selection {
+                justify-content: space-between;
+            }
+            label {
+                min-width: auto;
+            }
+            input {
+                width: 3rem;
+            }
+            #settings-icon {
+                bottom: 0.5rem;
+                right: 0.5rem;
+            }
+            .setting-group {
+                max-width: 100%; /* Full width on mobile */
+            }
+        }
+        @media (min-width: 601px) {
+            .dice-selection-container {
+                gap: 1rem;
+            }
+            .dice-selection {
+                padding: 0.5rem 1rem;
+            }
+            label {
+                min-width: 160px;
+            }
+        }
+        .big-text #results,
+        .big-text .dice-selection label,
+        .big-text input,
+        .big-text button,
+        .big-text .setting-group label,
+        .big-text .settings-footer p {
+            font-size: 1.2em;
+        }
+        .grey-die {
+            background: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>Necromunda Rolls</h1>
+    <div class="dice-selection-container">
+        <div class="dice-selection">
+            <label for="scatter-count">Scatter:</label>
+            <div class="dice-control">
+                <button onclick="document.getElementById('scatter-count').stepDown();">-</button>
+                <input type="number" id="scatter-count" min="0" max="6" value="0">
+                <button onclick="document.getElementById('scatter-count').stepUp();">+</button>
+            </div>
+            <button onclick="document.getElementById('scatter-count').value = 0;">Clear</button>
+        </div>
+        <div class="dice-selection">
+            <label for="ammo-count">Ammo / Rapid Fire:</label>
+            <div class="dice-control">
+                <button onclick="document.getElementById('ammo-count').stepDown();">-</button>
+                <input type="number" id="ammo-count" min="0" max="6" value="0">
+                <button onclick="document.getElementById('ammo-count').stepUp();">+</button>
+            </div>
+            <button onclick="document.getElementById('ammo-count').value = 0;">Clear</button>
+        </div>
+        <div class="dice-selection">
+            <label for="injury-count">Injury (Fighter):</label>
+            <div class="dice-control">
+                <button onclick="document.getElementById('injury-count').stepDown();">-</button>
+                <input type="number" id="injury-count" min="0" max="6" value="0">
+                <button onclick="document.getElementById('injury-count').stepUp();">+</button>
+            </div>
+            <button onclick="document.getElementById('injury-count').value = 0;">Clear</button>
+        </div>
+        <div class="dice-selection">
+            <label for="damage-count">Damage (Vehicle):</label>
+            <div class="dice-control">
+                <button onclick="document.getElementById('damage-count').stepDown();">-</button>
+                <input type="number" id="damage-count" min="0" max="6" value="0">
+                <button onclick="document.getElementById('damage-count').stepUp();">+</button>
+            </div>
+            <button onclick="document.getElementById('damage-count').value = 0;">Clear</button>
+        </div>
+        <div class="dice-selection">
+            <label for="location-count">Vehicle Location:</label>
+            <div class="dice-control">
+                <button onclick="document.getElementById('location-count').stepDown();">-</button>
+                <input type="number" id="location-count" min="0" max="6" value="0">
+                <button onclick="document.getElementById('location-count').stepUp();">+</button>
+            </div>
+            <button onclick="document.getElementById('location-count').value = 0;">Clear</button>
+        </div>
+        <div class="dice-selection">
+            <label for="control-count">Control (Vehicle):</label>
+            <div class="dice-control">
+                <button onclick="document.getElementById('control-count').stepDown();">-</button>
+                <input type="number" id="control-count" min="0" max="6" value="0">
+                <button onclick="document.getElementById('control-count').stepUp();">+</button>
+            </div>
+            <button onclick="document.getElementById('control-count').value = 0;">Clear</button>
+        </div>
+        <div class="dice-selection">
+            <label for="d6-count">D6 (Standard):</label>
+            <div class="dice-control">
+                <button onclick="document.getElementById('d6-count').stepDown();">-</button>
+                <input type="number" id="d6-count" min="0" max="6" value="0">
+                <button onclick="document.getElementById('d6-count').stepUp();">+</button>
+            </div>
+            <button onclick="document.getElementById('d6-count').value = 0;">Clear</button>
+        </div>
+    </div>
+    <div class="button-container">
+        <button id="roll">Roll</button>
+        <button id="clear-all">Clear All</button>
+    </div>
+    <canvas id="diceCanvas"></canvas>
+    <div id="results"></div>
+    <div id="settings-icon">⚙️</div>
+    <div id="settings-overlay">
+        <button id="close-settings">×</button>
+        <div class="setting-group">
+            <h2>Hide Dice Types</h2>
+            <label><input type="checkbox" id="hide-scatter"> Hide Scatter</label>
+            <label><input type="checkbox" id="hide-ammo"> Hide Ammo / Rapid Fire</label>
+            <label><input type="checkbox" id="hide-injury"> Hide Injury (Fighter)</label>
+            <label><input type="checkbox" id="hide-damage"> Hide Damage (Vehicle)</label>
+            <label><input type="checkbox" id="hide-location"> Hide Vehicle Location</label>
+            <label><input type="checkbox" id="hide-control"> Hide Control (Vehicle)</label>
+            <label><input type="checkbox" id="hide-d6"> Hide D6 (Standard)</label>
+        </div>
+        <div class="setting-group">
+            <h2>Text Size</h2>
+            <label><input type="radio" name="text-size" value="small" checked> Small Text</label>
+            <label><input type="radio" name="text-size" value="big"> Big Text</label>
+        </div>
+        <div class="setting-group">
+            <h2>Sound</h2>
+            <label><input type="checkbox" id="enable-sound"> Enable Roll Sound</label>
+        </div>
+        <div class="setting-group">
+            <h2>Theme (Future)</h2>
+            <p>Theme selection coming soon!</p>
+        </div>
+        <div class="settings-footer">
+            <img src="assets/image/necromun300x200.gif" alt="Necromunda Rolls Logo">
+            <p>Version 1.0.0 | Last Updated: June 05, 2025, 06:39 PM +03</p>
+            <p><a href="https://github.com/erdemdur/necromunda-rolls" target="_blank">View Project on GitHub</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Define outcomes and labels for each die type
+            const dieOutcomes = {
+                scatter: [
+                    { label: 'Up' },
+                    { label: 'Right' },
+                    { label: 'Down' },
+                    { label: 'Left' },
+                    { label: 'Hit' },
+                    { label: 'Hit' }
+                ],
+                ammo: [
+                    { label: '1 Hit + Ammo!' },
+                    { label: '1 Hit' },
+                    { label: '1 Hit' },
+                    { label: '2 Hits' },
+                    { label: '2 Hits' },
+                    { label: '3 Hits' }
+                ],
+                injury: [
+                    { label: 'Flesh Wound' },
+                    { label: 'Flesh Wound' },
+                    { label: 'Seriously Injured' },
+                    { label: 'Seriously Injured' },
+                    { label: 'Seriously Injured' },
+                    { label: 'Out of Action' }
+                ],
+                damage: [
+                    { label: 'Glancing' },
+                    { label: 'Glancing' },
+                    { label: 'Glancing' },
+                    { label: 'Penetrating' },
+                    { label: 'Penetrating' },
+                    { label: 'Catastrophic' }
+                ],
+                location: [
+                    { label: 'Body' },
+                    { label: 'Body' },
+                    { label: 'Body' },
+                    { label: 'Crew' },
+                    { label: 'Drive' },
+                    { label: 'Engine' }
+                ],
+                control: [
+                    { label: 'Swerve 45°' },
+                    { label: 'Swerve 45°' },
+                    { label: 'Swerve 45°' },
+                    { label: 'Jack-knife 90°' },
+                    { label: 'Jack-knife 90°' },
+                    { label: 'Roll' }
+                ],
+                d6: [
+                    { label: '1' },
+                    { label: '2' },
+                    { label: '3' },
+                    { label: '4' },
+                    { label: '5' },
+                    { label: '6' }
+                ]
+            };
+
+            // Define mapping of dice types to image sections (x, y coordinates in the sprite sheet)
+            const dieSections = {
+                scatter: [
+                    { x: 335, y: 56 },   // 1: Arrow Up
+                    { x: 519, y: 56 },   // 2: Arrow Right
+                    { x: 703, y: 56 },   // 3: Arrow Down
+                    { x: 887, y: 56 },   // 4: Arrow Left
+                    { x: 1071, y: 56 },  // 5: Hit
+                    { x: 1255, y: 56 }   // 6: Hit
+                ],
+                ammo: [
+                    { x: 335, y: 180 },   // 1: 1 Hit + Ammo!
+                    { x: 519, y: 180 },   // 2: 1 Hit
+                    { x: 703, y: 180 },   // 3: 1 Hit
+                    { x: 887, y: 180 },   // 4: 2 Hits
+                    { x: 1071, y: 180 },  // 5: 2 Hits
+                    { x: 1255, y: 180 }   // 6: 3 Hits
+                ],
+                injury: [
+                    { x: 335, y: 301 },   // 1: Flesh Wound
+                    { x: 519, y: 301 },   // 2: Flesh Wound
+                    { x: 703, y: 301 },   // 3: Seriously Injured
+                    { x: 887, y: 301 },   // 4: Seriously Injured
+                    { x: 1071, y: 301 },  // 5: Seriously Injured
+                    { x: 1255, y: 301 }   // 6: Out of Action
+                ],
+                damage: [
+                    { x: 335, y: 422 },   // 1: Glancing
+                    { x: 519, y: 422 },   // 2: Glancing
+                    { x: 704, y: 422 },   // 3: Glancing
+                    { x: 887, y: 422 },   // 4: Penetrating
+                    { x: 1071, y: 422 },  // 5: Penetrating
+                    { x: 1255, y: 422 }   // 6: Catastrophic
+                ],
+                location: [
+                    { x: 335, y: 545 },   // 1: Body
+                    { x: 519, y: 545 },   // 2: Body
+                    { x: 704, y: 545 },   // 3: Body
+                    { x: 887, y: 545 },   // 4: Crew
+                    { x: 1071, y: 545 },  // 5: Drive
+                    { x: 1255, y: 545 }   // 6: Engine
+                ],
+                control: [
+                    { x: 335, y: 670 },   // 1: Swerve 45°
+                    { x: 519, y: 670 },   // 2: Swerve 45°
+                    { x: 704, y: 670 },   // 3: Swerve 45°
+                    { x: 887, y: 670 },   // 4: Jack-knife 90°
+                    { x: 1071, y: 670 },  // 5: Jack-knife 90°
+                    { x: 1255, y: 670 }   // 6: Roll
+                ]
+            };
+
+            // Rules table for future extensibility
+            const rulesTable = {
+                '2d6LastingInjuries': {
+                    condition: (diceCounts) => diceCounts.d6 === 2 && Object.values(diceCounts).filter(c => c > 0 && c !== diceCounts.d6).length === 0,
+                    outcomes: {
+                        2: 'Horrible Scars',
+                        3: 'Noticeable Scars',
+                        4: 'Loss of One Eye',
+                        5: 'Broken Leg',
+                        6: 'Broken Arm',
+                        7: 'Unnerving',
+                        8: 'Lost Nose',
+                        9: 'Broken Jaw',
+                        10: 'Lost Fingers',
+                        11: 'Chest Wound',
+                        12: 'Dead'
+                    }
+                }
+            };
+
+            const canvas = document.getElementById('diceCanvas');
+            const ctx = canvas.getContext('2d');
+            let dieSize = 60;
+            const spacing = 13;
+            let dicePerRow = 6;
+
+            // Load the dice image
+            const diceImage = new Image();
+			
+			//this was temporary
+            //diceImage.src = 'https://i.imgur.com/kXCnjTJ.png';
+            //diceImage.crossOrigin = 'Anonymous';
+
+			diceImage.src = 'assets/image/lazy.png';
+
+            // Audio setup for local roll.mp3
+            let audio = new Audio('assets/audio/roll.mp3');
+            audio.muted = true; // Muted by default
+            let isSoundEnabled = localStorage.getItem('enableSound') === 'true' || false;
+
+            function playRollSound() {
+                if (isSoundEnabled) {
+                    audio.currentTime = 0; // Rewind to start
+                    audio.play().catch(error => console.error('Audio play failed:', error));
+                }
+            }
+
+            // Dice rolling logic
+            const rollDie = () => Math.floor(Math.random() * 6) + 1;
+
+            const drawDie = (x, y, type, value, isFirst = false, apply2d6Rule = false) => {
+                ctx.save();
+                ctx.translate(x, y);
+
+                // Apply random rotation
+                const rotation = Math.random() * Math.PI * 2;
+                ctx.rotate(rotation);
+
+                // Draw the die
+                if (type !== 'd6') {
+                    const section = dieSections[type][value - 1];
+                    ctx.drawImage(diceImage, section.x, section.y, 100, 100, -dieSize / 2, -dieSize / 2, dieSize, dieSize);
+                } else {
+                    // Determine background color for D6 die
+                    ctx.fillStyle = (apply2d6Rule && isFirst) ? '#888' : 'white';
+                    ctx.fillRect(-dieSize / 2, -dieSize / 2, dieSize, dieSize);
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(-dieSize / 2, -dieSize / 2, dieSize, dieSize);
+
+                    // Draw pips
+                    ctx.fillStyle = 'black';
+                    const pipSize = dieSize / 8;
+                    const positions = [
+                        [], [[0, 0]], [[-dieSize / 4, -dieSize / 4], [dieSize / 4, dieSize / 4]],
+                        [[-dieSize / 4, -dieSize / 4], [0, 0], [dieSize / 4, dieSize / 4]],
+                        [[-dieSize / 4, -dieSize / 4], [-dieSize / 4, dieSize / 4], [dieSize / 4, -dieSize / 4], [dieSize / 4, dieSize / 4]],
+                        [[-dieSize / 4, -dieSize / 4], [-dieSize / 4, dieSize / 4], [dieSize / 4, -dieSize / 4], [dieSize / 4, dieSize / 4], [0, 0]],
+                        [[-dieSize / 4, -dieSize / 4], [-dieSize / 4, 0], [-dieSize / 4, dieSize / 4], [dieSize / 4, -dieSize / 4], [dieSize / 4, 0], [dieSize / 4, dieSize / 4]]
+                    ];
+                    positions[value].forEach(([px, py]) => {
+                        ctx.beginPath();
+                        ctx.arc(px, py, pipSize, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                }
+                ctx.restore();
+            };
+
+            const updateCanvasSize = (totalDice) => {
+                if (totalDice === 0) {
+                    canvas.width = 1;
+                    canvas.height = 1;
+                    return;
+                }
+                const maxWidth = Math.min(window.innerWidth - 40, 800);
+                dicePerRow = Math.floor(maxWidth / (dieSize + spacing)) || 1;
+                const rows = Math.ceil(totalDice / dicePerRow);
+                const canvasWidth = dicePerRow * (dieSize + spacing) + spacing;
+                const canvasHeight = rows * (dieSize + spacing) + spacing;
+                canvas.width = canvasWidth;
+                canvas.height = canvasHeight;
+            };
+
+            const rollDice = () => {
+                const diceCounts = {
+                    scatter: parseInt(document.getElementById('scatter-count').value) || 0,
+                    ammo: parseInt(document.getElementById('ammo-count').value) || 0,
+                    injury: parseInt(document.getElementById('injury-count').value) || 0,
+                    damage: parseInt(document.getElementById('damage-count').value) || 0,
+                    location: parseInt(document.getElementById('location-count').value) || 0,
+                    control: parseInt(document.getElementById('control-count').value) || 0,
+                    d6: parseInt(document.getElementById('d6-count').value) || 0
+                };
+
+                const totalDice = Object.values(diceCounts).reduce((a, b) => a + b, 0);
+                if (totalDice === 0) {
+                    document.getElementById('results').innerHTML = 'Please select at least one die to roll.';
+                    updateCanvasSize(0);
+                    return;
+                }
+
+                playRollSound();
+
+                updateCanvasSize(totalDice);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                let results = '';
+                let currentIndex = 0;
+                let d6Results = [];
+                let is2d6Roll = diceCounts.d6 === 2 && Object.values(diceCounts).filter(c => c > 0 && c !== diceCounts.d6).length === 0;
+
+                // Track D6 dice separately
+                let d6DiceRolled = [];
+                let d6Index = 0;
+
+                // First pass: Collect all dice rolls
+                for (const type in diceCounts) {
+                    const count = diceCounts[type];
+                    if (count === 0) continue;
+
+                    if (type === 'd6') {
+                        for (let i = 0; i < count; i++) {
+                            const value = rollDie();
+                            d6DiceRolled.push({ type: 'd6', value, isFirst: i === 0 });
+                            d6Results.push(value);
+                        }
+                    } else {
+                        let typeResults = `${type.charAt(0).toUpperCase() + type.slice(1)}: `;
+                        let values = [];
+
+                        for (let i = 0; i < count; i++) {
+                            const value = rollDie();
+                            values.push(value);
+
+                            const row = Math.floor(currentIndex / dicePerRow);
+                            const col = currentIndex % dicePerRow;
+                            const x = col * (dieSize + spacing) + dieSize / 2 + spacing;
+                            const y = row * (dieSize + spacing) + dieSize / 2 + spacing;
+
+                            drawDie(x, y, type, value, false, false);
+                            typeResults += `${dieOutcomes[type][value - 1].label}${i < count - 1 ? ', ' : ''}`;
+                            currentIndex++;
+                        }
+
+                        if (count > 0) {
+                            results += typeResults + '<br>';
+                        }
+                    }
+                }
+
+                // Second pass: Draw D6 dice with correct graying logic
+                for (const die of d6DiceRolled) {
+                    const row = Math.floor(currentIndex / dicePerRow);
+                    const col = currentIndex % dicePerRow;
+                    const x = col * (dieSize + spacing) + dieSize / 2 + spacing;
+                    const y = row * (dieSize + spacing) + dieSize / 2 + spacing;
+
+                    drawDie(x, y, die.type, die.value, die.isFirst && is2d6Roll, is2d6Roll);
+                    currentIndex++;
+                }
+
+                // Handle D6 results
+                if (d6Results.length > 0) {
+                    let d6Text = `D6 (Standard): ${d6Results.join(', ')}`;
+                    if (is2d6Roll) {
+                        const sum = d6Results.reduce((a, b) => a + b, 0);
+                        const outcome = rulesTable['2d6LastingInjuries'].outcomes[sum];
+                        if (outcome) {
+                            d6Text += ` (2d6 Lasting Injuries: ${outcome})`;
+                        }
+                    }
+                    results += d6Text + '<br>';
+                }
+
+                document.getElementById('results').innerHTML = results;
+            };
+
+            // Clear all inputs
+            document.getElementById('clear-all').addEventListener('click', () => {
+                const inputs = document.querySelectorAll('input[type="number"]');
+                inputs.forEach(input => input.value = 0);
+                document.getElementById('results').innerHTML = '';
+                updateCanvasSize(0);
+            });
+
+            // Settings logic
+            const settingsIcon = document.getElementById('settings-icon');
+            const settingsOverlay = document.getElementById('settings-overlay');
+            const closeSettings = document.getElementById('close-settings');
+
+            settingsIcon.addEventListener('click', () => {
+                settingsOverlay.classList.add('active');
+            });
+
+            closeSettings.addEventListener('click', () => {
+                settingsOverlay.classList.remove('active');
+            });
+
+            // Load settings from localStorage
+            const diceTypes = ['scatter', 'ammo', 'injury', 'damage', 'location', 'control', 'd6'];
+            diceTypes.forEach(type => {
+                const checkbox = document.getElementById(`hide-${type}`);
+                const saved = localStorage.getItem(`hide-${type}`);
+                if (saved === 'true') {
+                    checkbox.checked = true;
+                    document.querySelector(`label[for="${type}-count"]`).parentElement.style.display = 'none';
+                }
+                checkbox.addEventListener('change', () => {
+                    localStorage.setItem(`hide-${type}`, checkbox.checked);
+                    document.querySelector(`label[for="${type}-count"]`).parentElement.style.display = !checkbox.checked ? 'flex' : 'none';
+                });
+            });
+
+            const textSizeRadios = document.querySelectorAll('input[name="text-size"]');
+            const savedTextSize = localStorage.getItem('textSize') || 'small';
+            document.body.classList.toggle('big-text', savedTextSize === 'big');
+            textSizeRadios.forEach(radio => {
+                if (radio.value === savedTextSize) radio.checked = true;
+                radio.addEventListener('click', () => {
+                    localStorage.setItem('textSize', radio.value);
+                    document.body.classList.toggle('big-text', radio.value === 'big');
+                });
+            });
+
+            const enableSoundCheckbox = document.getElementById('enable-sound');
+            isSoundEnabled = localStorage.getItem('enableSound') === 'true' || false;
+            enableSoundCheckbox.checked = isSoundEnabled;
+            audio.muted = !isSoundEnabled; // Sync audio mute state with checkbox
+            enableSoundCheckbox.addEventListener('change', () => {
+                isSoundEnabled = enableSoundCheckbox.checked;
+                audio.muted = !isSoundEnabled;
+                localStorage.setItem('enableSound', isSoundEnabled);
+            });
+
+            // Event listeners
+            document.getElementById('roll').addEventListener('click', rollDice);
+
+            // Initial canvas setup
+            updateCanvasSize(0);
+
+            // Resize listener
+            window.addEventListener('resize', () => {
+                const totalDice = Array.from(document.querySelectorAll('input[type="number"]'))
+                    .reduce((sum, input) => sum + (parseInt(input.value) || 0), 0);
+                updateCanvasSize(totalDice);
+                rollDice(); // Redraw dice on resize
+            });
+        });
+    </script>
+</body>
+</html>
