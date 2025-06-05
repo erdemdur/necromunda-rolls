@@ -215,7 +215,7 @@
         }
     </style>
 </head>
-<body>
+<body class="big-text">
     <h1>Necromunda Rolls</h1>
     <div class="dice-selection-container">
         <div class="dice-selection">
@@ -245,7 +245,7 @@
             </div>
             <button onclick="document.getElementById('injury-count').value = 0;">Clear</button>
         </div>
-        <div class="dice-selection">
+        <div class="dice-selection" style="display: none;">
             <label for="damage-count">Damage (Vehicle):</label>
             <div class="dice-control">
                 <button onclick="document.getElementById('damage-count').stepDown();">-</button>
@@ -254,7 +254,7 @@
             </div>
             <button onclick="document.getElementById('damage-count').value = 0;">Clear</button>
         </div>
-        <div class="dice-selection">
+        <div class="dice-selection" style="display: none;">
             <label for="location-count">Vehicle Location:</label>
             <div class="dice-control">
                 <button onclick="document.getElementById('location-count').stepDown();">-</button>
@@ -263,7 +263,7 @@
             </div>
             <button onclick="document.getElementById('location-count').value = 0;">Clear</button>
         </div>
-        <div class="dice-selection">
+        <div class="dice-selection" style="display: none;">
             <label for="control-count">Control (Vehicle):</label>
             <div class="dice-control">
                 <button onclick="document.getElementById('control-count').stepDown();">-</button>
@@ -296,19 +296,23 @@
             <label><input type="checkbox" id="hide-scatter"> Hide Scatter</label>
             <label><input type="checkbox" id="hide-ammo"> Hide Ammo / Rapid Fire</label>
             <label><input type="checkbox" id="hide-injury"> Hide Injury (Fighter)</label>
-            <label><input type="checkbox" id="hide-damage"> Hide Damage (Vehicle)</label>
-            <label><input type="checkbox" id="hide-location"> Hide Vehicle Location</label>
-            <label><input type="checkbox" id="hide-control"> Hide Control (Vehicle)</label>
+            <label><input type="checkbox" id="hide-damage" checked> Hide Damage (Vehicle)</label>
+            <label><input type="checkbox" id="hide-location" checked> Hide Vehicle Location</label>
+            <label><input type="checkbox" id="hide-control" checked> Hide Control (Vehicle)</label>
             <label><input type="checkbox" id="hide-d6"> Hide D6 (Standard)</label>
         </div>
         <div class="setting-group">
             <h2>Text Size</h2>
-            <label><input type="radio" name="text-size" value="small" checked> Small Text</label>
-            <label><input type="radio" name="text-size" value="big"> Big Text</label>
+            <label><input type="radio" name="text-size" value="small"> Small Text</label>
+            <label><input type="radio" name="text-size" value="big" checked> Big Text</label>
         </div>
         <div class="setting-group">
             <h2>Sound</h2>
-            <label><input type="checkbox" id="enable-sound"> Enable Roll Sound</label>
+            <label><input type="checkbox" id="enable-sound" checked> Enable Roll Sound</label>
+        </div>
+        <div class="setting-group">
+            <h2>Rules</h2>
+            <label><input type="checkbox" id="disable-special-rules"> Disable Special Rules (e.g., 2D6 Lasting Injuries)</label>
         </div>
         <div class="setting-group">
             <h2>Theme (Future)</h2>
@@ -316,7 +320,7 @@
         </div>
         <div class="settings-footer">
             <img src="assets/image/necromun300x200.gif" alt="Necromunda Rolls Logo">
-            <p>Version 1.0.0 | Last Updated: June 05, 2025, 07:42 PM +03</p>
+            <p>Version 1.0.1 | Last Updated: June 05, 2025, 09:35 PM +03</p>
             <p><a href="https://github.com/erdemdur/necromunda-rolls" target="_blank">View Project on GitHub</a></p>
         </div>
     </div>
@@ -438,7 +442,13 @@
             // Rules table for future extensibility
             const rulesTable = {
                 '2d6LastingInjuries': {
-                    condition: (diceCounts) => diceCounts.d6 === 2 && Object.values(diceCounts).filter(c => c > 0 && c !== diceCounts.d6).length === 0,
+                    condition: (diceCounts) => {
+                        const totalDice = Object.values(diceCounts).reduce((a, b) => a + b, 0);
+                        const nonD6Dice = Object.entries(diceCounts)
+                            .filter(([type]) => type !== 'd6')
+                            .reduce((sum, [, count]) => sum + count, 0);
+                        return diceCounts.d6 === 2 && totalDice === 2 && nonD6Dice === 0;
+                    },
                     outcomes: {
                         2: 'Horrible Scars',
                         3: 'Noticeable Scars',
@@ -457,7 +467,7 @@
 
             const canvas = document.getElementById('diceCanvas');
             const ctx = canvas.getContext('2d');
-            let dieSize = 60;
+            let dieSize = 70;
             const spacing = 13;
             let dicePerRow = 6;
 
@@ -467,16 +477,17 @@
 
             // Load the dice image
             const diceImage = new Image();
-			//temp
+			
+			//old temp host
             //diceImage.src = 'https://i.imgur.com/kXCnjTJ.png';
             //diceImage.crossOrigin = 'Anonymous';
-
-            diceImage.src = 'assets/image/lazy.png';
+			
+			diceImage.src = 'assets/image/lazy.png';
 
             // Audio setup for local roll.mp3
             let audio = new Audio('assets/audio/roll.mp3');
-            audio.muted = true; // Muted by default
-            let isSoundEnabled = localStorage.getItem('enableSound') === 'true' || false;
+            let isSoundEnabled = true; // Default to true as per request
+            audio.muted = !isSoundEnabled; // Sync audio mute state
 
             function playRollSound() {
                 if (isSoundEnabled) {
@@ -591,7 +602,8 @@
                 let results = '';
                 let currentIndex = 0;
                 let d6Results = [];
-                let is2d6Roll = diceCounts.d6 === 2 && Object.values(diceCounts).filter(c => c > 0 && c !== diceCounts.d6).length === 0;
+                const disableSpecialRules = localStorage.getItem('disableSpecialRules') === 'true';
+                const is2d6Roll = !disableSpecialRules && rulesTable['2d6LastingInjuries'].condition(diceCounts);
 
                 // Track D6 dice separately
                 let d6DiceRolled = [];
@@ -674,15 +686,23 @@
                 settingsOverlay.classList.remove('active');
             });
 
-            // Load settings from localStorage
+            // Load settings from localStorage or set defaults
             const diceTypes = ['scatter', 'ammo', 'injury', 'damage', 'location', 'control', 'd6'];
             diceTypes.forEach(type => {
                 const checkbox = document.getElementById(`hide-${type}`);
-                const saved = localStorage.getItem(`hide-${type}`);
-                if (saved === 'true') {
-                    checkbox.checked = true;
-                    document.querySelector(`label[for="${type}-count"]`).parentElement.style.display = 'none';
+                let saved = localStorage.getItem(`hide-${type}`);
+                // Set defaults for damage, location, and control if not already set
+                if (saved === null) {
+                    if (['damage', 'location', 'control'].includes(type)) {
+                        saved = 'true';
+                        localStorage.setItem(`hide-${type}`, 'true');
+                    } else {
+                        saved = 'false';
+                        localStorage.setItem(`hide-${type}`, 'false');
+                    }
                 }
+                checkbox.checked = saved === 'true';
+                document.querySelector(`label[for="${type}-count"]`).parentElement.style.display = !checkbox.checked ? 'flex' : 'none';
                 checkbox.addEventListener('change', () => {
                     localStorage.setItem(`hide-${type}`, checkbox.checked);
                     document.querySelector(`label[for="${type}-count"]`).parentElement.style.display = !checkbox.checked ? 'flex' : 'none';
@@ -690,7 +710,11 @@
             });
 
             const textSizeRadios = document.querySelectorAll('input[name="text-size"]');
-            const savedTextSize = localStorage.getItem('textSize') || 'small';
+            let savedTextSize = localStorage.getItem('textSize');
+            if (savedTextSize === null) {
+                savedTextSize = 'big'; // Default to big text
+                localStorage.setItem('textSize', 'big');
+            }
             document.body.classList.toggle('big-text', savedTextSize === 'big');
             textSizeRadios.forEach(radio => {
                 if (radio.value === savedTextSize) radio.checked = true;
@@ -701,13 +725,29 @@
             });
 
             const enableSoundCheckbox = document.getElementById('enable-sound');
-            isSoundEnabled = localStorage.getItem('enableSound') === 'true' || false;
+            let savedSoundEnabled = localStorage.getItem('enableSound');
+            if (savedSoundEnabled === null) {
+                savedSoundEnabled = 'true'; // Default to enabled
+                localStorage.setItem('enableSound', 'true');
+            }
+            isSoundEnabled = savedSoundEnabled === 'true';
             enableSoundCheckbox.checked = isSoundEnabled;
-            audio.muted = !isSoundEnabled; // Sync audio mute state with checkbox
+            audio.muted = !isSoundEnabled;
             enableSoundCheckbox.addEventListener('change', () => {
                 isSoundEnabled = enableSoundCheckbox.checked;
                 audio.muted = !isSoundEnabled;
                 localStorage.setItem('enableSound', isSoundEnabled);
+            });
+
+            const disableSpecialRulesCheckbox = document.getElementById('disable-special-rules');
+            let savedDisableSpecialRules = localStorage.getItem('disableSpecialRules');
+            if (savedDisableSpecialRules === null) {
+                savedDisableSpecialRules = 'false'; // Default to false (special rules enabled)
+                localStorage.setItem('disableSpecialRules', 'false');
+            }
+            disableSpecialRulesCheckbox.checked = savedDisableSpecialRules === 'true';
+            disableSpecialRulesCheckbox.addEventListener('change', () => {
+                localStorage.setItem('disableSpecialRules', disableSpecialRulesCheckbox.checked);
             });
 
             // Event listeners
