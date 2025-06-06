@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="assets/image/necromun300x200.gif">
+	<link rel="icon" href="assets/image/necromun300x200.gif">
     <title>Necromunda Rolls</title>
     <!-- Open Graph Meta Tags for Social Sharing -->
     <meta property="og:title" content="Necromunda Rolls">
@@ -19,8 +19,8 @@
             box-sizing: border-box;
         }
         body {
-            background: #222;
-            color: #fff;
+            background: #2a2a2a;
+            color: #d9d9d9;
             text-align: center;
             font-family: Arial, sans-serif;
             padding: 1rem;
@@ -34,7 +34,7 @@
             margin-bottom: 1rem;
         }
         #diceCanvas {
-            background: #333;
+            background: #ff8c66;
             margin: 1rem 0;
             max-width: 100%;
             border-radius: 5px;
@@ -71,16 +71,16 @@
             font-size: clamp(0.8rem, 2vw, 1rem);
             width: 4rem;
             text-align: center;
-            background: #333;
-            color: #fff;
+            background: #2a2a2a;
+            color: #d9d9d9;
             border: 1px solid #666;
         }
         button {
             padding: 0.3rem 0.6rem;
             font-size: clamp(0.9rem, 2.5vw, 1.2rem);
-            background: #444;
-            color: #fff;
-            border: 1px solid #666;
+            background: #4a4a4a;
+            color: #d9d9d9;
+            border: 1px solid #b3592e;
             border-radius: 5px;
             cursor: pointer;
             touch-action: manipulation;
@@ -98,17 +98,19 @@
         }
         #results {
             width: 100%;
-            max-width: 800px; /* Match dice-selection-container width */
+            max-width: 800px;
             margin-top: 1rem;
             text-align: left;
             max-height: 20vh;
             overflow-y: auto;
             font-size: clamp(0.8rem, 2vw, 1rem);
             padding: 0.5rem;
-            background: #333;
+            background: #2a2a2a;
+            border: 2px solid #ff8c66;
             border-radius: 5px;
-            color: #fff;
+            color: #d9d9d9;
         }
+        #results:empty {display: none;}
         #settings-icon {
             position: fixed;
             bottom: 1rem;
@@ -123,7 +125,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 1);
             z-index: 1000;
             overflow-y: auto;
             padding: 2rem;
@@ -134,13 +136,21 @@
         }
         .setting-group {
             margin-bottom: 1.5rem;
-            max-width: 600px; /* Limit settings width on desktop */
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
         }
         .setting-group label {
             display: block;
             margin-bottom: 0.5rem;
+        }
+        select {
+            padding: 5px;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            background: #333;
+            color: #fff;
+            border: 1px solid #666;
+            border-radius: 5px;
         }
         #close-settings {
             position: absolute;
@@ -189,7 +199,7 @@
                 right: 0.5rem;
             }
             .setting-group {
-                max-width: 100%; /* Full width on mobile */
+                max-width: 100%;
             }
         }
         @media (min-width: 601px) {
@@ -214,9 +224,68 @@
         .grey-die {
             background: #888;
         }
+        /* Theme Styles */
+        .theme-zone-mortalis {
+            /*background: linear-gradient(to bottom, #2a2a2a, #1a1a1a);*/
+            background-image:linear-gradient(to bottom, rgba(42,42,42,.6), rgba(26,26,26,.3)),url('assets/image/necromunda-rolls-mortalis-mat.jpg');
+			background-size:     cover;          
+			background-repeat:   no-repeat;
+			background-position: top center;
+        }
+        .theme-zone-mortalis #diceCanvas {
+            background: #ff8c66;
+        }
+        .theme-zone-mortalis #results {
+            border: 20px solid rgb(89 76 49);
+			    border-image: repeating-linear-gradient(-45deg, transparent, transparent 5px, rgb(89 76 49) 6px, rgb(197 138 36) 10px) 25;
+        }
+        .theme-zone-mortalis button {
+            background: #4a4a4a;
+            border: 1px solid #b3592e;
+        }
+        .theme-zone-mortalis h1, .theme-zone-mortalis label, .theme-zone-mortalis .setting-group h2, .theme-zone-mortalis .settings-footer p {
+            color: #d9d9d9;
+        }
+        .theme-ash-wastes {
+            /*background: linear-gradient(to bottom, #d4b07a, #c0c0c0);*/
+			background-image:linear-gradient(to bottom, rgba(212,176,122,0.6), rgba(192,192,192,.6)),url('assets/image/necromunda-rolls-ashwaste-mat.jpg');
+			background-image:linear-gradient(to bottom, rgba(212,176,122,0.6), rgba(192,192,192,.6)),url('assets/image/necromunda-rolls-ashwaste-mat.jpg');
+			background-size:     cover;          
+			background-repeat:   no-repeat;
+			background-position: top center;
+        }
+        .theme-ash-wastes #diceCanvas {
+            background: 7aa62d;
+        }
+        .theme-ash-wastes #results {
+            border: 4px solid #fff;
+        }
+        .theme-ash-wastes button {
+            background: #8a7a5b;
+            border: 1px solid #a68c55;
+        }
+        .theme-ash-wastes h1, .theme-ash-wastes label, .theme-ash-wastes .setting-group h2, .theme-ash-wastes .settings-footer p {
+            color: #ffffff;
+        }
+        .theme-dark-mode {
+            background: #222;
+        }
+        .theme-dark-mode #diceCanvas {
+            background: #333;
+        }
+        .theme-dark-mode #results {
+            border: 2px solid #333;
+        }
+        .theme-dark-mode button {
+            background: #444;
+            border: 1px solid #666;
+        }
+        .theme-dark-mode h1, .theme-dark-mode label, .theme-dark-mode .setting-group h2, .theme-dark-mode .settings-footer p {
+            color: #fff;
+        }
     </style>
 </head>
-<body class="big-text">
+<body class="big-text theme-zone-mortalis">
     <h1>Necromunda Rolls</h1>
     <div class="dice-selection-container">
         <div class="dice-selection">
@@ -316,12 +385,17 @@
             <label><input type="checkbox" id="disable-special-rules"> Disable Special Rules (e.g., 2D6 Lasting Injuries)</label>
         </div>
         <div class="setting-group">
-            <h2>Theme (Future)</h2>
-            <p>Theme selection coming soon!</p>
+            <h2>Themes</h2>
+            <select id="theme-select">
+                <option value="zone-mortalis" selected>Zone Mortalis</option>
+                <option value="ash-wastes">Ash Wastes</option>
+                <option value="dark-mode">Dark Mode</option>
+            </select>
         </div>
+
         <div class="settings-footer">
             <img src="assets/image/necromun300x200.gif" alt="Necromunda Rolls Logo">
-            <p>Version 1.0.3 | Last Updated: June 05, 2025, 10:39 PM +03</p>
+            <p>Version 1.0.4 | Last Updated: June 06, 2025, 12:24 AM +03</p>
             <p><a href="https://github.com/erdemdur/necromunda-rolls" target="_blank">View Project on GitHub</a></p>
         </div>
     </div>
@@ -468,9 +542,11 @@
 
             const canvas = document.getElementById('diceCanvas');
             const ctx = canvas.getContext('2d');
-            let dieSize = 70;
+            let dieSize = 60;
             const spacing = 13;
             let dicePerRow = 6;
+            const trayEdgeHeight = 10; // Height of the tray's raised edges
+            const trayPadding = 20; // Padding inside the tray for dice
 
             // Store the current dice state for redrawing on resize
             let currentDice = [];
@@ -478,49 +554,66 @@
 
             // Load the dice image
             const diceImage = new Image();
-			
+            
 			//old temp host
-            //diceImage.src = 'https://i.imgur.com/kXCnjTJ.png';
+			//diceImage.src = 'https://i.imgur.com/kXCnjTJ.png';
             //diceImage.crossOrigin = 'Anonymous';
-			
+
 			diceImage.src = 'assets/image/lazy.png';
 
             // Audio setup for local roll.mp3
             let audio = new Audio('assets/audio/roll.mp3');
-            let isSoundEnabled = true; // Default to true as per request
-            audio.muted = !isSoundEnabled; // Sync audio mute state
+            let isSoundEnabled = true;
+            audio.muted = !isSoundEnabled;
 
             function playRollSound() {
                 if (isSoundEnabled) {
-		    audio.playbackRate = +(Math.random() + 1).toFixed(1);	
-                    audio.currentTime = 0; // Rewind to start
+                    audio.currentTime = 0;
+					audio.playbackRate = +(Math.random() + 1).toFixed(2);
                     audio.play().catch(error => console.error('Audio play failed:', error));
                 }
             }
 
-            // Dice rolling logic
-            const rollDie = () => Math.floor(Math.random() * 6) + 1;
+            // Function to draw the top-down dice tray
+            const drawDiceTray = (width, height) => {
+                // Clear the canvas first to apply the themed background
+                ctx.fillStyle = document.querySelector('#diceCanvas').style.backgroundColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw tray base
+                const baseX = trayPadding;
+                const baseY = trayPadding;
+                const baseWidth = width - trayPadding * 2;
+                const baseHeight = height - trayPadding * 2;
+                ctx.fillStyle = '#444'; // Darker base color
+                ctx.fillRect(baseX, baseY, baseWidth, baseHeight);
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(baseX, baseY, baseWidth, baseHeight);
+
+                // Draw raised edges (top-down view with slight 3D effect)
+                ctx.fillStyle = '#666'; // Lighter edge color
+                ctx.fillRect(baseX, baseY - trayEdgeHeight, baseWidth, trayEdgeHeight); // Top edge
+                ctx.fillRect(baseX - trayEdgeHeight, baseY, trayEdgeHeight, baseHeight); // Left edge
+                ctx.fillRect(baseX + baseWidth, baseY, trayEdgeHeight, baseHeight); // Right edge
+                ctx.fillRect(baseX, baseY + baseHeight, baseWidth, trayEdgeHeight); // Bottom edge
+            };
 
             const drawDie = (x, y, type, value, isFirst = false, apply2d6Rule = false, rotation = 0) => {
                 ctx.save();
                 ctx.translate(x, y);
-
-                // Apply stored rotation
                 ctx.rotate(rotation);
 
-                // Draw the die
                 if (type !== 'd6') {
                     const section = dieSections[type][value - 1];
                     ctx.drawImage(diceImage, section.x, section.y, 100, 100, -dieSize / 2, -dieSize / 2, dieSize, dieSize);
                 } else {
-                    // Determine background color for D6 die
                     ctx.fillStyle = (apply2d6Rule && isFirst) ? '#888' : 'white';
                     ctx.fillRect(-dieSize / 2, -dieSize / 2, dieSize, dieSize);
                     ctx.strokeStyle = 'black';
                     ctx.lineWidth = 2;
                     ctx.strokeRect(-dieSize / 2, -dieSize / 2, dieSize, dieSize);
 
-                    // Draw pips
                     ctx.fillStyle = 'black';
                     const pipSize = dieSize / 8;
                     const positions = [
@@ -543,15 +636,17 @@
                 if (totalDice === 0) {
                     canvas.width = 1;
                     canvas.height = 1;
+                    drawDiceTray(canvas.width, canvas.height);
                     return;
                 }
                 const maxWidth = Math.min(window.innerWidth - 40, 800);
-                dicePerRow = Math.floor(maxWidth / (dieSize + spacing)) || 1;
+                dicePerRow = Math.floor((maxWidth - trayPadding * 2) / (dieSize + spacing)) || 1;
                 const rows = Math.ceil(totalDice / dicePerRow);
-                const canvasWidth = dicePerRow * (dieSize + spacing) + spacing;
-                const canvasHeight = rows * (dieSize + spacing) + spacing;
+                const canvasWidth = dicePerRow * (dieSize + spacing) + trayPadding * 2;
+                const canvasHeight = rows * (dieSize + spacing) + trayPadding * 2 + trayEdgeHeight;
                 canvas.width = canvasWidth;
                 canvas.height = canvasHeight;
+                drawDiceTray(canvasWidth, canvasHeight);
             };
 
             const redrawDice = () => {
@@ -561,14 +656,12 @@
                 }
 
                 updateCanvasSize(currentDice.length);
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
                 let currentIndex = 0;
                 for (const die of currentDice) {
                     const row = Math.floor(currentIndex / dicePerRow);
                     const col = currentIndex % dicePerRow;
-                    const x = col * (dieSize + spacing) + dieSize / 2 + spacing;
-                    const y = row * (dieSize + spacing) + dieSize / 2 + spacing;
+                    const x = col * (dieSize + spacing) + dieSize / 2 + trayPadding;
+                    const y = row * (dieSize + spacing) + dieSize / 2 + trayPadding;
 
                     drawDie(x, y, die.type, die.value, die.isFirst, die.apply2d6Rule, die.rotation);
                     currentIndex++;
@@ -599,7 +692,6 @@
 
                 playRollSound();
 
-                // Clear previous state
                 currentDice = [];
                 let results = '';
                 let currentIndex = 0;
@@ -607,11 +699,9 @@
                 const disableSpecialRules = localStorage.getItem('disableSpecialRules') === 'true';
                 const is2d6Roll = !disableSpecialRules && rulesTable['2d6LastingInjuries'].condition(diceCounts);
 
-                // Track D6 dice separately
                 let d6DiceRolled = [];
                 let d6Index = 0;
 
-                // First pass: Collect all dice rolls
                 for (const type in diceCounts) {
                     const count = diceCounts[type];
                     if (count === 0) continue;
@@ -619,7 +709,7 @@
                     if (type === 'd6') {
                         for (let i = 0; i < count; i++) {
                             const value = rollDie();
-                            const rotation = Math.random() * Math.PI * 2; // Set initial rotation
+                            const rotation = Math.random() * Math.PI * 2;
                             d6DiceRolled.push({ type: 'd6', value, isFirst: i === 0, apply2d6Rule: is2d6Roll, rotation });
                             d6Results.push(value);
                         }
@@ -629,7 +719,7 @@
 
                         for (let i = 0; i < count; i++) {
                             const value = rollDie();
-                            const rotation = Math.random() * Math.PI * 2; // Set initial rotation
+                            const rotation = Math.random() * Math.PI * 2;
                             values.push(value);
 
                             currentDice.push({ type, value, isFirst: false, apply2d6Rule: false, rotation });
@@ -643,12 +733,10 @@
                     }
                 }
 
-                // Second pass: Add D6 dice to the state
                 for (const die of d6DiceRolled) {
                     currentDice.push(die);
                 }
 
-                // Handle D6 results
                 if (d6Results.length > 0) {
                     let d6Text = `D6 (Standard): ${d6Results.join(', ')}`;
                     if (is2d6Roll) {
@@ -665,7 +753,10 @@
                 redrawDice();
             };
 
-            // Clear all inputs
+            function rollDie() {
+                return Math.floor(Math.random() * 6) + 1;
+            }
+
             document.getElementById('clear-all').addEventListener('click', () => {
                 const inputs = document.querySelectorAll('input[type="number"]');
                 inputs.forEach(input => input.value = 0);
@@ -675,7 +766,6 @@
                 updateCanvasSize(0);
             });
 
-            // Settings logic
             const settingsIcon = document.getElementById('settings-icon');
             const settingsOverlay = document.getElementById('settings-overlay');
             const closeSettings = document.getElementById('close-settings');
@@ -688,12 +778,10 @@
                 settingsOverlay.classList.remove('active');
             });
 
-            // Load settings from localStorage or set defaults
             const diceTypes = ['scatter', 'ammo', 'injury', 'damage', 'location', 'control', 'd6'];
             diceTypes.forEach(type => {
                 const checkbox = document.getElementById(`hide-${type}`);
                 let saved = localStorage.getItem(`hide-${type}`);
-                // Set defaults for damage, location, and control if not already set
                 if (saved === null) {
                     if (['damage', 'location', 'control'].includes(type)) {
                         saved = 'true';
@@ -714,7 +802,7 @@
             const textSizeRadios = document.querySelectorAll('input[name="text-size"]');
             let savedTextSize = localStorage.getItem('textSize');
             if (savedTextSize === null) {
-                savedTextSize = 'big'; // Default to big text
+                savedTextSize = 'big';
                 localStorage.setItem('textSize', 'big');
             }
             document.body.classList.toggle('big-text', savedTextSize === 'big');
@@ -729,7 +817,7 @@
             const enableSoundCheckbox = document.getElementById('enable-sound');
             let savedSoundEnabled = localStorage.getItem('enableSound');
             if (savedSoundEnabled === null) {
-                savedSoundEnabled = 'true'; // Default to enabled
+                savedSoundEnabled = 'true';
                 localStorage.setItem('enableSound', 'true');
             }
             isSoundEnabled = savedSoundEnabled === 'true';
@@ -744,7 +832,7 @@
             const disableSpecialRulesCheckbox = document.getElementById('disable-special-rules');
             let savedDisableSpecialRules = localStorage.getItem('disableSpecialRules');
             if (savedDisableSpecialRules === null) {
-                savedDisableSpecialRules = 'false'; // Default to false (special rules enabled)
+                savedDisableSpecialRules = 'false';
                 localStorage.setItem('disableSpecialRules', 'false');
             }
             disableSpecialRulesCheckbox.checked = savedDisableSpecialRules === 'true';
@@ -752,13 +840,25 @@
                 localStorage.setItem('disableSpecialRules', disableSpecialRulesCheckbox.checked);
             });
 
-            // Event listeners
+            // Theme selection logic
+            const themeSelect = document.getElementById('theme-select');
+            let savedTheme = localStorage.getItem('theme') || 'zone-mortalis';
+            themeSelect.value = savedTheme;
+            document.body.classList.add(`theme-${savedTheme}`);
+
+            themeSelect.addEventListener('change', () => {
+                const newTheme = themeSelect.value;
+                document.body.classList.remove(`theme-${savedTheme}`);
+                document.body.classList.add(`theme-${newTheme}`);
+                savedTheme = newTheme;
+                localStorage.setItem('theme', newTheme);
+                redrawDice(); // Redraw to apply new canvas background
+            });
+
             document.getElementById('roll').addEventListener('click', rollDice);
 
-            // Initial canvas setup
             updateCanvasSize(0);
 
-            // Resize listener - Only redraw, don't re-roll or re-rotate
             window.addEventListener('resize', () => {
                 redrawDice();
             });
