@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-height, initial-scale=1.0">
 	<link rel="icon" href="assets/image/necromun300x200.gif">
     <title>Necromunda Rolls</title>
     <!-- Open Graph Meta Tags for Social Sharing -->
     <meta property="og:title" content="Necromunda Rolls">
-    <meta property="og:description" content="A super dirty tool for rolling dice in Necromunda games with customizable dice types and settings.">
+    <meta property="og:description" content="A fun tool for rolling dice in Necromunda games, featuring customizable dice types and settings.">
     <meta property="og:image" content="https://erdemdur.github.io/necromunda-rolls/assets/image/necromun300x200.gif">
     <meta property="og:url" content="https://erdemdur.github.io/necromunda-rolls/">
     <meta property="og:type" content="website">
@@ -101,8 +101,7 @@
             max-width: 800px;
             margin-top: 1rem;
             text-align: left;
-            max-height: 20vh;
-            overflow-y: auto;
+            min-height: 5rem;
             font-size: clamp(0.8rem, 2vw, 1rem);
             padding: 0.5rem;
             background: #2a2a2a;
@@ -237,7 +236,7 @@
         }
         .theme-zone-mortalis #results {
             border: 20px solid rgb(89 76 49);
-			    border-image: repeating-linear-gradient(-45deg, transparent, transparent 5px, rgb(89 76 49) 6px, rgb(197 138 36) 10px) 25;
+            border-image: repeating-linear-gradient(-45deg, transparent, transparent 5px, rgb(89 76 49) 6px, rgb(197 138 36) 10px) 25;
         }
         .theme-zone-mortalis button {
             background: #4a4a4a;
@@ -255,10 +254,11 @@
 			background-position: top center;
         }
         .theme-ash-wastes #diceCanvas {
-            background: 7aa62d;
+            background: #7aa62d;
         }
         .theme-ash-wastes #results {
-            border: 4px solid #fff;
+            border: 20px solid rgb(138 122 91);
+            border-image: repeating-linear-gradient(-45deg, transparent, transparent 5px, rgb(138 122 91) 6px, rgb(122 166 45) 10px) 25;
         }
         .theme-ash-wastes button {
             background: #8a7a5b;
@@ -385,18 +385,25 @@
             <label><input type="checkbox" id="disable-special-rules"> Disable Special Rules (e.g., 2D6 Lasting Injuries)</label>
         </div>
         <div class="setting-group">
-            <h2>Themes</h2>
+            <h2>Mat Theme</h2>
             <select id="theme-select">
                 <option value="zone-mortalis" selected>Zone Mortalis</option>
                 <option value="ash-wastes">Ash Wastes</option>
                 <option value="dark-mode">Dark Mode</option>
             </select>
         </div>
-
+        <div class="setting-group">
+            <h2>Dice Set</h2>
+            <select id="dice-set-select">
+                <option value="red-butcher" selected>Red Butcher</option>
+                <option value="house-of-blades">House of Blades</option>
+                <option value="standard">Standard</option>
+            </select>
+        </div>
         <div class="settings-footer">
             <img src="assets/image/necromun300x200.gif" alt="Necromunda Rolls Logo">
-            <p>Version 1.0.4 | Last Updated: June 06, 2025, 12:24 AM +03</p>
-            <p><a href="https://github.com/erdemdur/necromunda-rolls" target="_blank">View Project on GitHub</a></p>
+            <p>Version 1.0.5 | Last Updated: June 07, 2025, 03:47 AM +03</p>
+            <p><a href="https://github.com/necromunda-rolls" target="_blank">View Project on GitHub</a></p>
         </div>
     </div>
 
@@ -491,7 +498,7 @@
                 damage: [
                     { x: 335, y: 422 },   // 1: Glancing
                     { x: 519, y: 422 },   // 2: Glancing
-                    { x: 704, y: 422 },   // 3: Glancing
+                    { x: 703, y: 422 },   // 3: Glancing
                     { x: 887, y: 422 },   // 4: Penetrating
                     { x: 1071, y: 422 },  // 5: Penetrating
                     { x: 1255, y: 422 }   // 6: Catastrophic
@@ -499,7 +506,7 @@
                 location: [
                     { x: 335, y: 545 },   // 1: Body
                     { x: 519, y: 545 },   // 2: Body
-                    { x: 704, y: 545 },   // 3: Body
+                    { x: 703, y: 545 },   // 3: Body
                     { x: 887, y: 545 },   // 4: Crew
                     { x: 1071, y: 545 },  // 5: Drive
                     { x: 1255, y: 545 }   // 6: Engine
@@ -507,7 +514,7 @@
                 control: [
                     { x: 335, y: 670 },   // 1: Swerve 45°
                     { x: 519, y: 670 },   // 2: Swerve 45°
-                    { x: 704, y: 670 },   // 3: Swerve 45°
+                    { x: 703, y: 670 },   // 3: Swerve 45°
                     { x: 887, y: 670 },   // 4: Jack-knife 90°
                     { x: 1071, y: 670 },  // 5: Jack-knife 90°
                     { x: 1255, y: 670 }   // 6: Roll
@@ -543,81 +550,190 @@
             const canvas = document.getElementById('diceCanvas');
             const ctx = canvas.getContext('2d');
             let dieSize = 60;
-            const spacing = 13;
-            let dicePerRow = 6;
-            const trayEdgeHeight = 10; // Height of the tray's raised edges
-            const trayPadding = 20; // Padding inside the tray for dice
+            const trayEdgeHeight = 10;
+            const trayPadding = 20;
+            const diceSpacing = 15;
+            const dieMargin = 0;
 
             // Store the current dice state for redrawing on resize
             let currentDice = [];
             let currentResults = '';
 
-            // Load the dice image
-            const diceImage = new Image();
-            
-			//old temp host
-			//diceImage.src = 'https://i.imgur.com/kXCnjTJ.png';
-            //diceImage.crossOrigin = 'Anonymous';
+            // Load the dice images
+            const standardDiceImage = new Image();
+            standardDiceImage.src = 'assets/image/lazy.png';
+            //standardDiceImage.crossOrigin = 'Anonymous';
 
-			diceImage.src = 'assets/image/lazy.png';
+            const houseOfBladesImage = new Image();
+            houseOfBladesImage.src = 'assets/image/house-of-blades-dice.jpg';
+            //houseOfBladesImage.crossOrigin = 'Anonymous';
 
-            // Audio setup for local roll.mp3
+            const redButcherImage = new Image();
+            redButcherImage.src = 'assets/image/red-butcher-dice.jpg';
+            //redButcherImage.crossOrigin = 'Anonymous';
+
+            // Create an off-screen canvas for processing the dice texture
+            const offscreenCanvas = document.createElement('canvas');
+            offscreenCanvas.width = dieSize;
+            offscreenCanvas.height = dieSize;
+            const offscreenCtx = offscreenCanvas.getContext('2d');
+
+            // Create an off-screen canvas for the D6 texture sample
+            const d6TextureCanvas = document.createElement('canvas');
+            d6TextureCanvas.width = dieSize;
+            d6TextureCanvas.height = dieSize;
+            const d6TextureCtx = d6TextureCanvas.getContext('2d');
+
+            // Load and sample the D6 texture from position (207, 77) for House of Blades
+            houseOfBladesImage.onload = () => {
+                d6TextureCtx.drawImage(houseOfBladesImage, 207, 77, 100, 100, 0, 0, dieSize, dieSize);
+            };
+
+            // Create an off-screen canvas for Red Butcher D6 texture
+            const redButcherD6TextureCanvas = document.createElement('canvas');
+            redButcherD6TextureCanvas.width = dieSize;
+            redButcherD6TextureCanvas.height = dieSize;
+            const redButcherD6TextureCtx = redButcherD6TextureCanvas.getContext('2d');
+
+            redButcherImage.onload = () => {
+                redButcherD6TextureCtx.drawImage(redButcherImage, 207, 77, 100, 100, 0, 0, dieSize, dieSize);
+            };
+
+            // Load the logo image for the dice tray
+            const logoImage = new Image();
+            logoImage.src = 'assets/image/necromun300x200.gif';
+            //logoImage.crossOrigin = 'Anonymous';
+
+            // Audio setup for remote roll.mp3
             let audio = new Audio('assets/audio/roll.mp3');
             let isSoundEnabled = true;
             audio.muted = !isSoundEnabled;
 
-            function playRollSound() {
+            function playRoll() {
                 if (isSoundEnabled) {
-                    audio.currentTime = 0;
 					audio.playbackRate = +(Math.random() + 1).toFixed(2);
+                    audio.currentTime = 0;
                     audio.play().catch(error => console.error('Audio play failed:', error));
                 }
             }
 
-            // Function to draw the top-down dice tray
+            // Function to draw the top-down dice tray with theme-specific colors and logo
             const drawDiceTray = (width, height) => {
                 // Clear the canvas first to apply the themed background
                 ctx.fillStyle = document.querySelector('#diceCanvas').style.backgroundColor;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Draw tray base
+                // Draw tray base and edges based on current theme
                 const baseX = trayPadding;
                 const baseY = trayPadding;
                 const baseWidth = width - trayPadding * 2;
                 const baseHeight = height - trayPadding * 2;
-                ctx.fillStyle = '#444'; // Darker base color
+                let baseColor, edgeColor, lightEdgeColor;
+
+                if (document.body.classList.contains('theme-zone-mortalis')) {
+                    baseColor = '#444';
+                    edgeColor = '#666';
+                    lightEdgeColor = '#999';
+                } else if (document.body.classList.contains('theme-ash-wastes')) {
+                    baseColor = '#8a7a5b';
+                    edgeColor = '#a68c55';
+                    lightEdgeColor = '#c0a878';
+                } else { // dark-mode
+                    baseColor = '#2a2a2a';
+                    edgeColor = '#444';
+                    lightEdgeColor = '#666';
+                }
+
+                ctx.fillStyle = baseColor;
                 ctx.fillRect(baseX, baseY, baseWidth, baseHeight);
                 ctx.strokeStyle = '#333';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(baseX, baseY, baseWidth, baseHeight);
 
-                // Draw raised edges (top-down view with slight 3D effect)
-                ctx.fillStyle = '#666'; // Lighter edge color
+                // Draw raised edges with theme-specific colors
+                ctx.fillStyle = edgeColor;
                 ctx.fillRect(baseX, baseY - trayEdgeHeight, baseWidth, trayEdgeHeight); // Top edge
                 ctx.fillRect(baseX - trayEdgeHeight, baseY, trayEdgeHeight, baseHeight); // Left edge
                 ctx.fillRect(baseX + baseWidth, baseY, trayEdgeHeight, baseHeight); // Right edge
+                ctx.fillStyle = lightEdgeColor; // Lighter color for bottom edge
                 ctx.fillRect(baseX, baseY + baseHeight, baseWidth, trayEdgeHeight); // Bottom edge
+
+                // Draw logo in the center with reduced size (quarter of original)
+                if (logoImage.complete) {
+                    ctx.globalAlpha = 0.05;
+                    const logoWidth = (baseWidth * 0.8) * 0.25; // Quarter of 80% of tray width
+                    const logoHeight = (logoWidth / 300) * 200; // Maintain aspect ratio (300x200)
+                    const logoX = baseX + (baseWidth - logoWidth) / 2;
+                    const logoY = baseY + (baseHeight - logoHeight) / 2;
+                    ctx.drawImage(logoImage, logoX, logoY, logoWidth, logoHeight);
+                    ctx.globalAlpha = 1.0; // Reset opacity
+                }
             };
 
-            const drawDie = (x, y, type, value, isFirst = false, apply2d6Rule = false, rotation = 0) => {
+            function drawDie(x, y, type, value, isFirst = false, apply2d6Rule = false, rotation = 0) {
                 ctx.save();
                 ctx.translate(x, y);
                 ctx.rotate(rotation);
 
+                // Apply shadow to the die itself
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 5;
+                ctx.shadowOffsetX = 5;
+                ctx.shadowOffsetY = 5;
+
+                const selectedDiceSet = localStorage.getItem('diceSet') || 'red-butcher'; // Changed default to 'red-butcher'
+                let diceImage;
+                if (selectedDiceSet === 'house-of-blades') {
+                    diceImage = houseOfBladesImage;
+                } else if (selectedDiceSet === 'red-butcher') {
+                    diceImage = redButcherImage;
+                } else {
+                    diceImage = standardDiceImage;
+                }
+
                 if (type !== 'd6') {
                     const section = dieSections[type][value - 1];
                     ctx.drawImage(diceImage, section.x, section.y, 100, 100, -dieSize / 2, -dieSize / 2, dieSize, dieSize);
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(-dieSize / 2, -dieSize / 2, dieSize, dieSize);
                 } else {
-                    ctx.fillStyle = (apply2d6Rule && isFirst) ? '#888' : 'white';
-                    ctx.fillRect(-dieSize / 2, -dieSize / 2, dieSize, dieSize);
+                    if (apply2d6Rule && isFirst) {
+                        ctx.fillStyle = '#888';
+                        ctx.fillRect(-dieSize / 2, -dieSize / 2, dieSize, dieSize);
+                    } else if (selectedDiceSet === 'house-of-blades') {
+                        ctx.drawImage(d6TextureCanvas, -dieSize / 2, -dieSize / 2, dieSize, dieSize);
+                    } else if (selectedDiceSet === 'red-butcher') {
+                        ctx.drawImage(redButcherD6TextureCanvas, -dieSize / 2, -dieSize / 2, dieSize, dieSize);
+                    } else {
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(-dieSize / 2, -dieSize / 2, dieSize, dieSize);
+                    }
+
                     ctx.strokeStyle = 'black';
                     ctx.lineWidth = 2;
                     ctx.strokeRect(-dieSize / 2, -dieSize / 2, dieSize, dieSize);
 
-                    ctx.fillStyle = 'black';
+                    // Disable shadow for D6 pips
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+
+                    // Set pip color based on dice set
+                    if (selectedDiceSet === 'house-of-blades') {
+                        ctx.fillStyle = '#660066';
+                    } else if (selectedDiceSet === 'red-butcher') {
+                        ctx.fillStyle = '#fff';
+                    } else {
+                        ctx.fillStyle = 'black';
+                    }
+
                     const pipSize = dieSize / 8;
                     const positions = [
-                        [], [[0, 0]], [[-dieSize / 4, -dieSize / 4], [dieSize / 4, dieSize / 4]],
+                        [],
+                        [[0, 0]],
+                        [[-dieSize / 4, -dieSize / 4], [dieSize / 4, dieSize / 4]],
                         [[-dieSize / 4, -dieSize / 4], [0, 0], [dieSize / 4, dieSize / 4]],
                         [[-dieSize / 4, -dieSize / 4], [-dieSize / 4, dieSize / 4], [dieSize / 4, -dieSize / 4], [dieSize / 4, dieSize / 4]],
                         [[-dieSize / 4, -dieSize / 4], [-dieSize / 4, dieSize / 4], [dieSize / 4, -dieSize / 4], [dieSize / 4, dieSize / 4], [0, 0]],
@@ -630,9 +746,9 @@
                     });
                 }
                 ctx.restore();
-            };
+            }
 
-            const updateCanvasSize = (totalDice) => {
+            function updateCanvasSize(totalDice) {
                 if (totalDice === 0) {
                     canvas.width = 1;
                     canvas.height = 1;
@@ -640,37 +756,41 @@
                     return;
                 }
                 const maxWidth = Math.min(window.innerWidth - 40, 800);
-                dicePerRow = Math.floor((maxWidth - trayPadding * 2) / (dieSize + spacing)) || 1;
-                const rows = Math.ceil(totalDice / dicePerRow);
-                const canvasWidth = dicePerRow * (dieSize + spacing) + trayPadding * 2;
-                const canvasHeight = rows * (dieSize + spacing) + trayPadding * 2 + trayEdgeHeight;
+                const canvasWidth = maxWidth;
+                const dicePerRow = Math.floor((canvasWidth - trayPadding * 2 - trayEdgeHeight * 2 - dieMargin * 2) / (dieSize + diceSpacing));
+                const totalRows = Math.ceil(totalDice / dicePerRow);
+                const requiredHeight = (dieSize + diceSpacing) * totalRows + trayPadding * 2 + trayEdgeHeight * 2 + dieMargin * 2;
+                const canvasHeight = totalDice <= 6 ? Math.min(requiredHeight, canvasWidth / 3) : Math.max(requiredHeight, canvasWidth / 2);
                 canvas.width = canvasWidth;
                 canvas.height = canvasHeight;
-                drawDiceTray(canvasWidth, canvasHeight);
-            };
+                drawDiceTray(canvas.width, canvas.height);
+            }
 
-            const redrawDice = () => {
+            function redrawDice() {
                 if (currentDice.length === 0) {
                     updateCanvasSize(0);
                     return;
                 }
-
                 updateCanvasSize(currentDice.length);
-                let currentIndex = 0;
-                for (const die of currentDice) {
-                    const row = Math.floor(currentIndex / dicePerRow);
-                    const col = currentIndex % dicePerRow;
-                    const x = col * (dieSize + spacing) + dieSize / 2 + trayPadding;
-                    const y = row * (dieSize + spacing) + dieSize / 2 + trayPadding;
-
+                const dicePerRow = Math.floor((canvas.width - trayPadding * 2 - trayEdgeHeight * 2 - dieMargin * 2) / (dieSize + diceSpacing));
+                const totalRows = Math.ceil(currentDice.length / dicePerRow);
+                const startX = trayPadding + trayEdgeHeight + dieMargin + dieSize / 2;
+                const startY = trayPadding + trayEdgeHeight + dieMargin + dieSize / 2;
+                let x = startX;
+                let y = startY;
+                for (let i = 0; i < currentDice.length; i++) {
+                    const die = currentDice[i];
+                    if (i > 0 && i % dicePerRow === 0) {
+                        x = startX;
+                        y += dieSize + diceSpacing;
+                    }
                     drawDie(x, y, die.type, die.value, die.isFirst, die.apply2d6Rule, die.rotation);
-                    currentIndex++;
+                    x += dieSize + diceSpacing;
                 }
-
                 document.getElementById('results').innerHTML = currentResults;
-            };
+            }
 
-            const rollDice = () => {
+            function rollDice() {
                 const diceCounts = {
                     scatter: parseInt(document.getElementById('scatter-count').value) || 0,
                     ammo: parseInt(document.getElementById('ammo-count').value) || 0,
@@ -680,7 +800,6 @@
                     control: parseInt(document.getElementById('control-count').value) || 0,
                     d6: parseInt(document.getElementById('d6-count').value) || 0
                 };
-
                 const totalDice = Object.values(diceCounts).reduce((a, b) => a + b, 0);
                 if (totalDice === 0) {
                     document.getElementById('results').innerHTML = 'Please select at least one die to roll.';
@@ -689,54 +808,43 @@
                     updateCanvasSize(0);
                     return;
                 }
-
-                playRollSound();
-
+                playRoll();
                 currentDice = [];
                 let results = '';
-                let currentIndex = 0;
                 let d6Results = [];
                 const disableSpecialRules = localStorage.getItem('disableSpecialRules') === 'true';
                 const is2d6Roll = !disableSpecialRules && rulesTable['2d6LastingInjuries'].condition(diceCounts);
-
                 let d6DiceRolled = [];
-                let d6Index = 0;
-
                 for (const type in diceCounts) {
                     const count = diceCounts[type];
                     if (count === 0) continue;
-
                     if (type === 'd6') {
                         for (let i = 0; i < count; i++) {
                             const value = rollDie();
                             const rotation = Math.random() * Math.PI * 2;
-                            d6DiceRolled.push({ type: 'd6', value, isFirst: i === 0, apply2d6Rule: is2d6Roll, rotation });
+                            const die = { type: 'd6', value, isFirst: i === 0, apply2d6Rule: is2d6Roll, rotation };
+                            d6DiceRolled.push(die);
                             d6Results.push(value);
                         }
                     } else {
                         let typeResults = `${type.charAt(0).toUpperCase() + type.slice(1)}: `;
                         let values = [];
-
                         for (let i = 0; i < count; i++) {
                             const value = rollDie();
                             const rotation = Math.random() * Math.PI * 2;
+                            const die = { type, value, isFirst: false, apply2d6Rule: false, rotation };
                             values.push(value);
-
-                            currentDice.push({ type, value, isFirst: false, apply2d6Rule: false, rotation });
+                            currentDice.push(die);
                             typeResults += `${dieOutcomes[type][value - 1].label}${i < count - 1 ? ', ' : ''}`;
-                            currentIndex++;
                         }
-
                         if (count > 0) {
                             results += typeResults + '<br>';
                         }
                     }
                 }
-
                 for (const die of d6DiceRolled) {
                     currentDice.push(die);
                 }
-
                 if (d6Results.length > 0) {
                     let d6Text = `D6 (Standard): ${d6Results.join(', ')}`;
                     if (is2d6Roll) {
@@ -748,10 +856,9 @@
                     }
                     results += d6Text + '<br>';
                 }
-
                 currentResults = results;
                 redrawDice();
-            };
+            }
 
             function rollDie() {
                 return Math.floor(Math.random() * 6) + 1;
@@ -852,7 +959,19 @@
                 document.body.classList.add(`theme-${newTheme}`);
                 savedTheme = newTheme;
                 localStorage.setItem('theme', newTheme);
-                redrawDice(); // Redraw to apply new canvas background
+                redrawDice(); // Redraw to apply new canvas background and tray colors
+            });
+
+            // Dice set selection logic
+            const diceSetSelect = document.getElementById('dice-set-select');
+            let savedDiceSet = localStorage.getItem('diceSet') || 'red-butcher'; // Changed default to 'red-butcher'
+            diceSetSelect.value = savedDiceSet;
+
+            diceSetSelect.addEventListener('change', () => {
+                const newDiceSet = diceSetSelect.value;
+                localStorage.setItem('diceSet', newDiceSet);
+                savedDiceSet = newDiceSet;
+                redrawDice(); // Redraw to apply new dice set
             });
 
             document.getElementById('roll').addEventListener('click', rollDice);
